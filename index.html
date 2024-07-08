@@ -1,11 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Video Player</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #333;
+            color: white;
+        }
+
+        video {
+            width: 80%;
+            height: auto;
+        }
+    </style>
 </head>
+
 <body>
-    
+    <video id="videoPlayer" controls>
+        Your browser does not support the video tag.
+    </video>
+    <script>
+        // Supongamos que este es el contenido del archivo JSON
+        const videoData = {
+            "videos": [
+                { "src": "https://www.youtube.com/watch?v=auDMCMqiW8U&list=RDauDMCMqiW8U&start_radio=1" },
+                { "src": "https://www.youtube.com/watch?v=yvmkD5Mc-n0" },
+                { "src": "https://www.youtube.com/watch?v=ykuKn3P9y_g" }
+            ]
+        };
+
+        // Cargar el primer video por defecto
+        const videoPlayer = document.getElementById('videoPlayer');
+        videoPlayer.src = videoData.videos[0].src;
+
+        // Función para ir a pantalla completa
+        function goFullScreen() {
+            if (videoPlayer.requestFullscreen) {
+                videoPlayer.requestFullscreen();
+            } else if (videoPlayer.mozRequestFullScreen) { // Firefox
+                videoPlayer.mozRequestFullScreen();
+            } else if (videoPlayer.webkitRequestFullscreen) { // Chrome and Safari
+                videoPlayer.webkitRequestFullscreen();
+            } else if (videoPlayer.msRequestFullscreen) { // IE/Edge
+                videoPlayer.msRequestFullscreen();
+            }
+        }
+
+        // Agregar evento de doble clic para ir a pantalla completa
+        videoPlayer.addEventListener('dblclick', goFullScreen);
+    </script>
 </body>
+
 </html>
