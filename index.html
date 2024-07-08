@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,54 +7,93 @@
     <style>
         body {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             background-color: #333;
             color: white;
         }
-
-        video {
+        iframe {
             width: 80%;
-            height: auto;
+            height: 80%;
+            margin-bottom: 20px;
         }
     </style>
 </head>
-
 <body>
-    <video id="videoPlayer" controls>
-        Your browser does not support the video tag.
-    </video>
+    <iframe id="videoPlayer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     <script>
-        // Supongamos que este es el contenido del archivo JSON
-        const videoData = {
-            "videos": [
-                { "src": "https://www.youtube.com/watch?v=auDMCMqiW8U&list=RDauDMCMqiW8U&start_radio=1" },
-                { "src": "https://www.youtube.com/watch?v=yvmkD5Mc-n0" },
-                { "src": "https://www.youtube.com/watch?v=ykuKn3P9y_g" }
-            ]
-        };
+        // URL del CSV publicado de Google Sheets
+        const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSAmBekaQHgPyx-mNw5KBLiG_KRxdpIO7Pvt6jXdBsHH8MhZOcHaSwHzGc_xt8o_7QXlDmZSRvOg15R/pub?output=csv'; // Cambia YOUR_SHEET_ID por el ID real de tu hoja de cálculo
 
-        // Cargar el primer video por defecto
-        const videoPlayer = document.getElementById('videoPlayer');
-        videoPlayer.src = videoData.videos[0].src;
-
-        // Función para ir a pantalla completa
-        function goFullScreen() {
-            if (videoPlayer.requestFullscreen) {
-                videoPlayer.requestFullscreen();
-            } else if (videoPlayer.mozRequestFullScreen) { // Firefox
-                videoPlayer.mozRequestFullScreen();
-            } else if (videoPlayer.webkitRequestFullscreen) { // Chrome and Safari
-                videoPlayer.webkitRequestFullscreen();
-            } else if (videoPlayer.msRequestFullscreen) { // IE/Edge
-                videoPlayer.msRequestFullscreen();
-            }
+        // Función para cargar el CSV
+        function loadCSV(callback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', googleSheetURL, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    callback(xhr.responseText);
+                }
+            };
+            xhr.send(null);
         }
 
-        // Agregar evento de doble clic para ir a pantalla completa
-        videoPlayer.addEventListener('dblclick', goFullScreen);
+        // Procesar el CSV
+        function processCSV(data) {
+            const lines = data.split('\n');
+            const result = [];
+            const headers = lines[0].split(',');
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i]) continue;
+                const obj = {};
+                const currentLine = lines[i].split(',');
+
+                for (let j = 0; j < headers.length; j++) {
+                    obj[headers[j]] = currentLine[j];
+                }
+                result.push(obj);
+            }
+            return result;
+        }
+
+        // Convertir URL de YouTube a formato embebido
+        function convertToEmbedURL(url) {
+            const videoId = url.split('v=')[1];
+            // return https://www.youtube.com/embed/${videoId};
+        }
+
+        // Inicializar la aplicación
+        function init() {
+            loadCSV(function(response) {
+                const videoData = processCSV(response);
+
+                // Cargar el primer video por defecto
+                const videoPlayer = document.getElementById('videoPlayer');
+                if (videoData.length > 0) {
+                    videoPlayer.src = convertToEmbedURL(videoData[0].src);
+                }
+
+                // Función para ir a pantalla completa
+                function goFullScreen() {
+                    if (videoPlayer.requestFullscreen) {
+                        videoPlayer.requestFullscreen();
+                    } else if (videoPlayer.mozRequestFullScreen) { // Firefox
+                        videoPlayer.mozRequestFullScreen();
+                    } else if (videoPlayer.webkitRequestFullscreen) { // Chrome and Safari
+                        videoPlayer.webkitRequestFullscreen();
+                    } else if (videoPlayer.msRequestFullscreen) { // IE/Edge
+                        videoPlayer.msRequestFullscreen();
+                    }
+                }
+
+                // Agregar evento de doble clic para ir a pantalla completa
+                videoPlayer.addEventListener('dblclick', goFullScreen);
+            });
+        }
+
+        window.onload = init;
     </script>
 </body>
-
 </html>
